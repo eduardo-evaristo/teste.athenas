@@ -1,0 +1,24 @@
+// Import all of Bootstrap's CSS
+@import "bootstrap/scss/bootstrap";
+
+//Customizando algumas classes
+@media (min-width: 576px) {
+    .border-sm-0 {
+      border: none !important;
+    }
+  }
+
+@media (min-width: 992px) {
+    .shadow-lg-none {
+      box-shadow: none !important;
+    }
+  }
+
+  .min-vh-80 {
+    min-height: 80vh !important;
+  }
+
+
+  
+  
+  
