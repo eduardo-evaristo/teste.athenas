@@ -45,27 +45,40 @@ function App() {
     /* gotta map updated obj to old object*/
   }
 
-  //Conclui tarefa
-  //TODO: Checar se data do objeto não ultrapassou a data atual
+  //Conclui tarefa - Mudar para id depois
+  //TODO: Checar se data do objeto não ultrapassou a data atual - Feito
   function handleConclude(taskObj) {
+    const dataJaPassou = validaData(taskObj.data);
+    if (!dataJaPassou) return;
     setTasks((prevTasks) =>
-      prevTasks.map((task) => {
-        if (task.titulo === taskObj.titulo) {
-          return { ...task, situacao: "concluído" };
-        }
-      })
+      prevTasks.map((task) =>
+        task.titulo === taskObj.titulo
+          ? { ...task, situacao: "concluído" }
+          : task
+      )
     );
   }
 
-  //'Desconclui' tarefa
+  //'Desconclui' tarefa - Mudar para id depois
   function handleUnconclude(taskObj) {
     setTasks((prevTasks) =>
-      prevTasks.map((task) => {
-        if (task.titulo === taskObj.titulo) {
-          return { ...task, situacao: "pendente" };
-        }
-      })
+      prevTasks.map((task) =>
+        task.titulo === taskObj.titulo
+          ? { ...task, situacao: "pendente" }
+          : task
+      )
     );
+  }
+
+  function validaData(data) {
+    const dataInput = new Date(data).setHours(0, 0, 0, 0) || 0;
+    const now = new Date(Date.now()).setHours(0, 0, 0, 0);
+    console.log(now, dataInput);
+    console.log(dataInput === now);
+    if (dataInput < now) {
+      return false;
+    }
+    return true;
   }
 
   return (

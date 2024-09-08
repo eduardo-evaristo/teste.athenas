@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 //Hashmap c códigos p possíveis erros
 const errors = new Map([
   [1, "Por favor, insira um título."],
-  [2, "O título não pode exceder 100 caracteres."],
+  [2, "O título deve ter entre 3 e 100 caracteres."],
   [3, "Por favor, insira uma data válida."],
 ]);
 
@@ -12,15 +12,17 @@ export default function Modal({ show, isEditing, onClose, onAdd }) {
   const [descricao, setDescricao] = useState(
     isEditing ? isEditing.descricao : ""
   );
-  const [data, setData] = useState(isEditing ? isEditing.data : "");
+  const [dataVencimento, setDataVencimento] = useState(
+    isEditing ? new Date(isEditing.data).toISOString().split("T")[0] : ""
+  );
   const [situacao, setSituacao] = useState(
     isEditing ? isEditing.situacao : "pendente"
   );
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
 
   //Controles dos states de cada input
   function handleTitulo(e) {
-    setError("");
+    setError(null);
     setTitulo(e.target.value);
   }
   function handleDescricao(e) {
@@ -31,39 +33,45 @@ export default function Modal({ show, isEditing, onClose, onAdd }) {
     setSituacao(e.target.value);
   }
   function handleData(e) {
-    setError("");
-    setData(e.target.value);
+    setError(null);
+    setDataVencimento(e.target.value);
   }
 
-  //TODO: Revisar essa funcionalidade
-  function validaData() {
-    const data1 = data.split("-");
-    const data2 = [data1[1], data1[2], data1[0]].join("/");
+  //TODO: Revisar essa funcionalidade - Feito
+  function validaData(data) {
+    const dataStep1 = data.split("-");
+    const dataStep2 = [dataStep1[1], dataStep1[2], dataStep1[0]].join("/");
 
-    const dataInput = new Date(data2).setHours(0, 0, 0, 0) || 0;
+    const dataInput = new Date(dataStep2).setHours(0, 0, 0, 0) || 0;
     const now = new Date(Date.now()).setHours(0, 0, 0, 0);
-    console.log(now, dataInput);
-    console.log(dataInput === now);
+
     if (dataInput < now) {
       setError(errors.get(3));
       return false;
     }
-    return true;
+    return dataStep2;
   }
 
   //Limpa campos após adição bem-sucedida
   function clearFields() {
-    setData("");
+    setDataVencimento("");
     setTitulo("");
     setDescricao("");
     setSituacao("pendente");
   }
 
   function handleSave() {
-    const newTask = { titulo, descricao, data, situacao };
+    //Se não houver título
     if (!titulo) return setError(errors.get(1));
-    if (titulo.length > 100) return setError(errors.get(2));
-    if (!validaData()) return;
+    //Se título exceder ou não for grande o suficiente
+    if (titulo.length > 100 || titulo.length < 3)
+      return setError(errors.get(2));
+    //Se data for válida (hoje ou no futuro), retornará true
+    const data = validaData(dataVencimento);
+    if (!data) return;
+
+    //Cria objeto novo caso tudo esteja favorável
+    const newTask = { titulo, descricao, data, situacao };
     //Limpa campos
     clearFields();
     //Fecha modal
@@ -78,7 +86,6 @@ export default function Modal({ show, isEditing, onClose, onAdd }) {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", closeOutOfModal);
-    console.log("entrou no effect");
 
     return () => {
       document.removeEventListener("keydown", closeOutOfModal);
@@ -156,7 +163,7 @@ export default function Modal({ show, isEditing, onClose, onAdd }) {
                       className="form-control"
                       id="exampleInputEmail1"
                       aria-describedby="emailHelp"
-                      value={data}
+                      value={dataVencimento}
                       onChange={handleData}
                     />
                   </div>

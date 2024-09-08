@@ -49,10 +49,6 @@ export function Tarefa({
   );
 }
 
-export function ContainerTarefa({ children }) {
-  return <div className="container my-4">{children}</div>;
-}
-
 export function ControleTarefa({ onOpen }) {
   return (
     <div className="row bg-light justify-content-around align-items-center rounded p-4 fw-bold fs-5 d-flex flex-column flex-sm-row">
