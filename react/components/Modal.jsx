@@ -7,13 +7,15 @@ const errors = new Map([
   [3, "Por favor, insira uma data válida."],
 ]);
 
-export default function Modal({ show, isEditing, onClose, onAdd }) {
+export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
   const [titulo, setTitulo] = useState(isEditing ? isEditing.titulo : "");
   const [descricao, setDescricao] = useState(
     isEditing ? isEditing.descricao : ""
   );
   const [dataVencimento, setDataVencimento] = useState(
-    isEditing ? new Date(isEditing.data).toISOString().split("T")[0] : ""
+    isEditing
+      ? new Date(isEditing.dt_vencimento).toISOString().split("T")[0]
+      : ""
   );
   const [situacao, setSituacao] = useState(
     isEditing ? isEditing.situacao : "pendente"
@@ -74,10 +76,10 @@ export default function Modal({ show, isEditing, onClose, onAdd }) {
     const newTask = { titulo, descricao, data, situacao };
     //Limpa campos
     clearFields();
-    //Fecha modal
-    onClose();
     //Adiciona objeto à variável de state
-    onAdd(newTask);
+    isEditing ? onUpdate({ ...newTask, id: isEditing.id }) : onAdd(newTask);
+    //Fecha modal e seta isEditing para falso
+    onClose();
   }
 
   //Sair do modal qnd apertar ESC

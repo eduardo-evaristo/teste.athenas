@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 //Importando componentes
 import { Container, ContainerTarefa } from "../components/Container";
 import { ControleTarefa, Tarefa } from "../components/Tarefa";
 import Modal from "../components/Modal";
 import Navbar from "../components/Navbar";
+import { SignUp, SignIn } from "./Authentication";
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,46 +30,134 @@ function App() {
   }
 
   //Adiciona tarefa A` lista
-  function handleAdd(taskObj) {
-    setTasks((prevTasks) => [...prevTasks, taskObj]);
+  async function handleAdd(taskObj) {
+    try {
+      const req = await fetch("http://127.0.0.1:3200/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          titulo: taskObj.titulo,
+          descricao: taskObj.descricao,
+          dtVencimento: taskObj.data,
+          situacao: taskObj.situacao,
+        }),
+      });
+      const res = await req.json();
+      console.log(res);
+      fetchTasks();
+      setTasks((prevTasks) => [...prevTasks, taskObj]);
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
-  //When tasks come from db, handle this using ID instead
-  function handleDelete(taskObj) {
-    setTasks((prevTasks) =>
-      prevTasks.filter((task) => task.titulo !== taskObj.titulo)
-    );
+  //When tasks come from db, handle this using ID instead - Feito
+  async function handleDelete(taskObj) {
+    try {
+      const req = await fetch("http://127.0.0.1:3200/tasks", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          idTask: taskObj.id,
+        }),
+      });
+      const res = await req.json();
+      console.log(res);
+      fetchTasks();
+      setTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== taskObj.id)
+      );
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   //Esperar dados virem do db pra usar id nisso
-  function handleUpdate(taskObj) {
-    /* gotta map updated obj to old object*/
+  async function handleUpdate(taskObj) {
+    try {
+      const req = await fetch("http://127.0.0.1:3200/tasks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          idTask: taskObj.id,
+          titulo: taskObj.titulo,
+          descricao: taskObj.descricao,
+          dtVencimento: taskObj.data,
+          situacao: taskObj.situacao,
+        }),
+      });
+      const res = await req.json();
+      fetchTasks();
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   //Conclui tarefa - Mudar para id depois
   //TODO: Checar se data do objeto não ultrapassou a data atual - Feito
-  function handleConclude(taskObj) {
-    const dataJaPassou = validaData(taskObj.data);
+  //Refatorado pra handleChangeTaskStatus
+  /*
+  async function handleConclude(taskObj) {
+    const dataJaPassou = validaData(taskObj.dt_vencimento);
     if (!dataJaPassou) return;
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.titulo === taskObj.titulo
-          ? { ...task, situacao: "concluído" }
-          : task
+        task.id === taskObj.id ? { ...task, situacao: "concluído" } : task
       )
     );
+  }
+    */
+
+  async function handleChangeTaskStatus(taskObj) {
+    const dataJaPassou = validaData(taskObj.dt_vencimento);
+    if (!dataJaPassou) return;
+    try {
+      const req = await fetch("http://127.0.0.1:3200/tasks", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          idTask: taskObj.id,
+          situacao: taskObj.situacao === "pendente" ? "concluído" : "pendente",
+        }),
+      });
+      const res = await req.json();
+      console.log(res);
+      fetchTasks();
+    } catch (err) {
+      console.log(err.message);
+    }
+    /*
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskObj.id ? { ...task, situacao: "concluído" } : task
+      )
+    );
+    */
   }
 
   //'Desconclui' tarefa - Mudar para id depois
+  //Refatorado pra handleChangeTaskStatus
+  /*
   function handleUnconclude(taskObj) {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.titulo === taskObj.titulo
-          ? { ...task, situacao: "pendente" }
-          : task
+        task.id === taskObj.id ? { ...task, situacao: "pendente" } : task
       )
     );
   }
+  */
 
   function validaData(data) {
     const dataInput = new Date(data).setHours(0, 0, 0, 0) || 0;
@@ -81,8 +170,28 @@ function App() {
     return true;
   }
 
+  async function fetchTasks() {
+    try {
+      const req = await fetch("http://127.0.0.1:3200/tasks", {
+        credentials: "include",
+      });
+      const res = await req.json();
+      const data = res.data.data;
+      console.log(data);
+      setTasks([...data]);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+  //Carrega tasks do banco de dados na primeira render
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
   return (
     <>
+      {/*<SignUp />*/}
+
       <Navbar />
       <Container>
         <ControleTarefa onOpen={handleOpen} />
@@ -90,9 +199,9 @@ function App() {
           {tasks.map((task) => (
             <Tarefa
               taskObj={task}
-              key={Math.random()}
+              key={task.id}
               onDelete={handleDelete}
-              onConclude={handleConclude}
+              onConclude={handleChangeTaskStatus}
               onUnconclude={handleUnconclude}
               onEdit={handleEdit}
             />
@@ -106,6 +215,7 @@ function App() {
           isEditing={isEditing}
           onClose={handleClose}
           onAdd={handleAdd}
+          onUpdate={handleUpdate}
         />
       )}
     </>

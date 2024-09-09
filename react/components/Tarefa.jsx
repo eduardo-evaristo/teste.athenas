@@ -14,13 +14,15 @@ export function Tarefa({
         <div className="text-secondary">{taskObj.descricao}</div>
       </div>
       <div className="col py-2 py-sm-0 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">
-        <div className="text-secondary">{taskObj.data}</div>
+        <div className="text-secondary">
+          {taskObj.dt_vencimento || taskObj.data}
+        </div>
       </div>
       <div className="col d-flex gap-2 justify-content-center my-2 my-sm-0">
         {taskObj.situacao === "concluído" ? (
           <button
             className="btn btn-secondary btn-sm btn-lg-lg"
-            onClick={() => onUnconclude(taskObj)}
+            onClick={() => onConclude(taskObj)}
           >
             <i className="bi bi-arrow-counterclockwise"></i>
           </button>
