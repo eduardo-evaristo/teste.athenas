@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../src/AuthContext";
+import { AuthContext } from "./../src/App";
 
 //Hashmap c códigos p possíveis erros
 const errors = new Map([
@@ -22,8 +22,6 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
     isEditing ? isEditing.situacao : "pendente"
   );
   const [error, setError] = useState(null);
-  const user = useContext(AuthContext);
-  console.log(user);
 
   //Controles dos states de cada input
   function handleTitulo(e) {

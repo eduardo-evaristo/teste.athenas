@@ -4,4 +4,8 @@ const signUpController = require("./../controllers/signUpController");
 
 const router = express.Router();
 
-router("/").post(signUpController.checkPayloadAuth, signInController.logInUser);
+router
+  .route("/")
+  .post(signUpController.checkPayloadAuth, signInController.logInUser);
+
+module.exports = router;

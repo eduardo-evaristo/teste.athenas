@@ -1,4 +1,4 @@
-export async function signUserOut(req, res) {
+async function signUserOut(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
   //Se access token n existir
@@ -13,3 +13,5 @@ export async function signUserOut(req, res) {
     .clearCookie("accessToken")
     .json({ status: "success", message: "Usuário deslogado." });
 }
+
+exports.signUserOut = signUserOut;

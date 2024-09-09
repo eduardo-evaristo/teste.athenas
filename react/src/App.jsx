@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { createContext } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 //Importando componentes
 import { Container, ContainerTarefa } from "../components/Container";

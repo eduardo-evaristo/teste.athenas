@@ -9,8 +9,8 @@ const app = express();
 dotenv.config({ path: "./config.env" });
 
 //Routers
-const signUpRouter = require("./controllers/signUpRouter");
-const SignInRouter = require("./routes/signInRouter");
+const signUpRouter = require("./routes/signUpRouter");
+const signInRouter = require("./routes/signInRouter");
 const tasksRouter = require("./routes/tasksRouter");
 const signOutRouter = require("./routes/signOutRouter");
 
@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //Montando rotas
-app.use("/signin", SignInRouter);
+app.use("/signin", signInRouter);
 app.use("/signup", signUpRouter);
 app.use("/tasks", tasksRouter);
 app.use("/signout", signOutRouter);

@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const db = require("./../db");
 
 //Funçao de utilidade pra hashear a senha
-export async function hashPassword(password, rounds) {
+async function hashPassword(password, rounds) {
   try {
     const hashedPassword = await bcrypt.hash(password, rounds);
     return hashedPassword;
@@ -14,7 +14,7 @@ export async function hashPassword(password, rounds) {
 //Handlers/Middleware
 
 //Handler final da rota "/signup"
-export async function signUpUser(req, res) {
+async function signUpUser(req, res) {
   const { username, password } = req.body;
   const query = "INSERT INTO usuarios (username, password) values ($1, $2)";
 
@@ -32,7 +32,7 @@ export async function signUpUser(req, res) {
 }
 
 //Middleware p checar payload de login e signup
-export function checkPayloadAuth(req, res, next) {
+function checkPayloadAuth(req, res, next) {
   console.log(req.cookies);
   const { username, password } = req.body;
   if (!username || !password)
@@ -43,7 +43,7 @@ export function checkPayloadAuth(req, res, next) {
 }
 
 //Middleware p checar se nome de usuário já existe
-export async function checkIfUsernameExists(req, res, next) {
+async function checkIfUsernameExists(req, res, next) {
   const { username } = req.body;
   const query = "SELECT username FROM usuarios WHERE username = $1";
   try {
@@ -66,3 +66,7 @@ export async function checkIfUsernameExists(req, res, next) {
   //Se não houver usuários com o nome passado
   next();
 }
+
+exports.signUpUser = signUpUser;
+exports.checkPayloadAuth = checkPayloadAuth;
+exports.checkIfUsernameExists = checkIfUsernameExists;

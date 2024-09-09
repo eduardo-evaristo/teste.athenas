@@ -3,8 +3,12 @@ const signUpController = require("./../controllers/signUpController");
 
 const router = express.Router();
 
-router("/").post(
-  signUpController.checkPayloadAuth,
-  signUpController.checkIfUsernameExists,
-  signUpController.signUpUser
-);
+router
+  .route("/")
+  .post(
+    signUpController.checkPayloadAuth,
+    signUpController.checkIfUsernameExists,
+    signUpController.signUpUser
+  );
+
+module.exports = router;

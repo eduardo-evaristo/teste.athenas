@@ -1,5 +1,8 @@
+const jsonwebtoken = require("jsonwebtoken");
+const db = require("./../db");
+
 //Handler final ppostar uma tarefa
-export async function postTask(req, res) {
+async function postTask(req, res) {
   console.log("entrou");
   const accessToken = req?.cookies?.accessToken;
   //Pegando payload que foi passado p o método sign do token e acessando userId nele
@@ -33,7 +36,7 @@ export async function postTask(req, res) {
   res.status(201).json({ status: "success", message: "Tarefa criada!" });
 }
 
-export async function getAllTasks(req, res) {
+async function getAllTasks(req, res) {
   const accessToken = req.cookies.accessToken;
 
   //Se access token n existir
@@ -44,6 +47,7 @@ export async function getAllTasks(req, res) {
 
   //Pegando payload que foi passado p o método sign do token e acessando userId nele
   const userId = checkAcessToken(accessToken);
+  //console.log(userId); - passed
 
   const query =
     "SELECT username, tarefas.id, titulo, dt_vencimento, descricao, situacao FROM tarefas JOIN usuarios ON tarefas.id_usuario = usuarios.id WHERE tarefas.id_usuario = $1 ORDER BY tarefas.id ASC";
@@ -61,7 +65,7 @@ export async function getAllTasks(req, res) {
   }
 }
 
-export async function deleteTask(req, res) {
+async function deleteTask(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
   //Se access token n existir
@@ -92,7 +96,7 @@ export async function deleteTask(req, res) {
   res.status(201).json({ status: "success", message: "Tarefa deletada!" });
 }
 
-export async function editTask(req, res) {
+async function editTask(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
   //Se access token n existir
@@ -133,7 +137,7 @@ export async function editTask(req, res) {
   }
 }
 
-export async function changeTaskStatus(req, res) {
+async function changeTaskStatus(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
   //Se access token n existir
@@ -165,3 +169,19 @@ export async function changeTaskStatus(req, res) {
     });
   }
 }
+
+function checkAcessToken(accessToken) {
+  //Extrai o id do usuário
+  const userId = jsonwebtoken.verify(
+    accessToken,
+    process.env.JWT_PRIVATE_KEY
+  ).userId;
+  //Retorna userId
+  return userId;
+}
+
+exports.getAllTasks = getAllTasks;
+exports.postTask = postTask;
+exports.deleteTask = deleteTask;
+exports.editTask = editTask;
+exports.changeTaskStatus = changeTaskStatus;

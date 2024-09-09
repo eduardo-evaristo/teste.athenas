@@ -4,3 +4,5 @@ const signOutController = require("./../controllers/signOutController");
 const router = express.Router();
 
 router.route("/").post(signOutController.signUserOut);
+
+module.exports = router;

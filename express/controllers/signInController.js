@@ -2,7 +2,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const db = require("./../db");
 
-export async function logInUser(req, res) {
+async function logInUser(req, res) {
   const { username, password } = req.body;
   const query = "SELECT * FROM usuarios WHERE username = $1";
   const queryResult = await db.query(query, [username]);
@@ -43,12 +43,4 @@ export async function logInUser(req, res) {
   }
 }
 
-export function checkAcessToken(accessToken) {
-  //Extrai o id do usuário
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
-  //Retorna userId
-  return userId;
-}
+exports.logInUser = logInUser;
