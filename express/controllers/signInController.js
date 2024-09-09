@@ -1,6 +1,7 @@
 const jsonwebtoken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const db = require("./../db");
+const { checkAcessToken } = require("./tasksController");
 
 async function logInUser(req, res) {
   const { username, password } = req.body;
@@ -31,7 +32,7 @@ async function logInUser(req, res) {
           secure: true,
           sameSite: "none", //
         })
-        .json({ status: "success", message: "Você foi logado." });
+        .json({ status: "success", data: username });
     } else {
       throw new Error("Senha inválida");
     }
@@ -43,4 +44,25 @@ async function logInUser(req, res) {
   }
 }
 
+async function isUserLoggedIn(req, res) {
+  const accessToken = req?.cookies?.accessToken;
+  if (!accessToken)
+    return res
+      .status(401)
+      .json({ status: "fail", message: "Usuário não autenticado" });
+
+  const userId = checkAcessToken(accessToken);
+  console.log("entrou aqqq");
+
+  const query = "SELECT username FROM usuarios WHERE id = $1";
+  try {
+    const queryResult = await db.query(query, [userId]);
+    const data = queryResult.rows[0].username;
+    res.status(200).json({ status: "success", data });
+  } catch (err) {
+    res.status(500).json({ status: "error", message: "Algo deu errado." });
+  }
+}
+
 exports.logInUser = logInUser;
+exports.isUserLoggedIn = isUserLoggedIn;

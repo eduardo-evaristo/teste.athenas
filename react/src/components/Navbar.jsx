@@ -1,9 +1,10 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../src/App";
+import { AuthContext } from "./../App";
 
 export default function Navbar() {
-  const user = useContext(AuthContext);
+  const { isUserLoggedIn, setIsUserLoggedIn } = useContext(AuthContext);
+  console.log(isUserLoggedIn);
 
   async function handleSignOut() {
     try {
@@ -13,6 +14,7 @@ export default function Navbar() {
       });
       const res = await req.json();
       console.log(res);
+      setIsUserLoggedIn(false);
     } catch (err) {
       console.log(err.message);
     }
@@ -41,11 +43,11 @@ export default function Navbar() {
           </button>
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              {user ? (
+              {isUserLoggedIn ? (
                 <>
                   <li className="nav-item">
                     <a href="/" className="nav-link text-white">
-                      {user.username}
+                      {isUserLoggedIn}
                     </a>
                   </li>
                   <li className="nav-item">

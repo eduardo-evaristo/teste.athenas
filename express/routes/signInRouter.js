@@ -8,4 +8,6 @@ router
   .route("/")
   .post(signUpController.checkPayloadAuth, signInController.logInUser);
 
+router.route("/check").post(signInController.isUserLoggedIn);
+
 module.exports = router;

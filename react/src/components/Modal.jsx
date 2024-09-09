@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "./../src/App";
+import { useEffect, useState } from "react";
 
 //Hashmap c códigos p possíveis erros
 const errors = new Map([

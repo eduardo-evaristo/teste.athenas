@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../App";
 
-import Form from "../components/Form";
+import Form from "./../components/Form";
 
 const caracteresNaoAceitos = [
   "'",
@@ -60,7 +61,7 @@ export function SignUp() {
         //Mostra o erro retornado do back
         setError(res.message);
       } else {
-        return navigate("/");
+        return navigate("/signin");
       }
       setIsLoading(false);
     } catch (err) {
@@ -90,13 +91,14 @@ export function SignUp() {
   );
 }
 
-//Componente da tela de signin (login)
+//Componente da tela de login
 export function SignIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { setIsUserLoggedIn } = useContext(AuthContext);
 
   function handleUsername(e) {
     setError(null);
@@ -128,6 +130,8 @@ export function SignIn() {
         setError(res.message);
       } else {
         //Redicrect
+        console.log(res);
+        setIsUserLoggedIn(res.data);
         navigate("/");
       }
       setIsLoading(false);

@@ -185,3 +185,5 @@ exports.postTask = postTask;
 exports.deleteTask = deleteTask;
 exports.editTask = editTask;
 exports.changeTaskStatus = changeTaskStatus;
+//
+exports.checkAcessToken = checkAcessToken;
