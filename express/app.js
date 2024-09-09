@@ -127,20 +127,48 @@ async function logInUser(req, res) {
   }
 }
 
+async function signUserOut(req, res) {
+  const accessToken = req?.cookies?.accessToken;
+
+  //Se access token n existir
+  if (!accessToken)
+    return res
+      .status(401)
+      .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
+
+  res
+    .status(200)
+    .clearCookie("accessToken")
+    .json({ status: "success", message: "Usuário deslogado." });
+}
+
+function checkAcessToken(accessToken) {
+  //Extrai o id do usuário
+  const userId = jsonwebtoken.verify(
+    accessToken,
+    process.env.JWT_PRIVATE_KEY
+  ).userId;
+  //Retorna userId
+  return userId;
+}
+
 //Handler final ppostar uma tarefa
 async function postTask(req, res) {
   console.log("entrou");
   const accessToken = req?.cookies?.accessToken;
   //Pegando payload que foi passado p o método sign do token e acessando userId nele
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
 
+  //Se access token n existir
   if (!accessToken)
     return res
       .status(401)
       .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
 
   //Possivelmente fazer isso numa função separada
   let { titulo, descricao, dtVencimento, situacao } = req.body;
@@ -165,15 +193,18 @@ async function postTask(req, res) {
 
 async function getAllTasks(req, res) {
   const accessToken = req.cookies.accessToken;
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
 
-  if (!accessToken) return;
+  //Se access token n existir
+  if (!accessToken)
+    return res
+      .status(401)
+      .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
 
   const query =
-    "SELECT username, tarefas.id, titulo, dt_vencimento, descricao, situacao FROM tarefas JOIN usuarios ON tarefas.id_usuario = usuarios.id WHERE tarefas.id_usuario = $1";
+    "SELECT username, tarefas.id, titulo, dt_vencimento, descricao, situacao FROM tarefas JOIN usuarios ON tarefas.id_usuario = usuarios.id WHERE tarefas.id_usuario = $1 ORDER BY tarefas.id ASC";
 
   try {
     const data = await db.query(query, [userId]);
@@ -190,16 +221,15 @@ async function getAllTasks(req, res) {
 
 async function deleteTask(req, res) {
   const accessToken = req?.cookies?.accessToken;
-  //Pegando payload que foi passado p o método sign do token e acessando userId nele
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
 
+  //Se access token n existir
   if (!accessToken)
     return res
       .status(401)
       .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
 
   //Possivelmente fazer isso numa função separada
   let { idTask } = req.body;
@@ -221,13 +251,16 @@ async function deleteTask(req, res) {
 }
 
 async function editTask(req, res) {
-  const accessToken = req.cookies.accessToken;
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
+  const accessToken = req?.cookies?.accessToken;
 
-  if (!accessToken) return;
+  //Se access token n existir
+  if (!accessToken)
+    return res
+      .status(401)
+      .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
 
   let { idTask, titulo, descricao, dtVencimento, situacao } = req.body;
   if (!descricao) descricao = null;
@@ -259,13 +292,16 @@ async function editTask(req, res) {
 }
 
 async function changeTaskStatus(req, res) {
-  const accessToken = req.cookies.accessToken;
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
+  const accessToken = req?.cookies?.accessToken;
 
-  if (!accessToken) return;
+  //Se access token n existir
+  if (!accessToken)
+    return res
+      .status(401)
+      .json({ status: "fail", message: "Usuário não autenticado." });
+
+  //Pegando payload que foi passado p o método sign do token e acessando userId nele
+  const userId = checkAcessToken(accessToken);
 
   const { situacao, idTask } = req.body;
   console.log(req.body);
@@ -298,6 +334,7 @@ app.get("/tasks", getAllTasks);
 app.delete("/tasks", deleteTask);
 app.put("/tasks", editTask);
 app.patch("/tasks", changeTaskStatus);
+app.post("/signout", signUserOut);
 
 const port = 3200;
 

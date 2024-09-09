@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createContext } from "react";
+
+const AuthContext = createContext();
 
 //Importando componentes
 import { Container, ContainerTarefa } from "../components/Container";
@@ -7,10 +11,51 @@ import Modal from "../components/Modal";
 import Navbar from "../components/Navbar";
 import { SignUp, SignIn } from "./Authentication";
 
+//Rotas do app React
+const router = createBrowserRouter([
+  { path: "/", element: <TasksPage /> },
+  { path: "/signin", element: <SignIn /> },
+  { path: "/signup", element: <SignUp /> },
+]);
+
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function isUserLogged() {
+      try {
+        const req = await fetch("http://127.0.0.1:3200/tasks", {
+          credentials: "include",
+        });
+        const res = await req.json();
+        const data = res.data.data;
+        setIsLoggedIn({ username: data[0].username });
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+    isUserLogged();
+  }, []);
+
+  return (
+    <>
+      <AuthContext.Provider value={isLoggedIn}>
+        <RouterProvider router={router} />
+      </AuthContext.Provider>
+    </>
+  );
+}
+
+export default App;
+
+function TasksPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [paginationControl, setPaginationControl] = useState(
+    Math.ceil(tasks.length / 5) || 1
+  );
+  const [currentPage, setCurrentPage] = useState(1);
 
   //Abre modal (criar tarefa)
   function handleOpen() {
@@ -48,7 +93,7 @@ function App() {
       const res = await req.json();
       console.log(res);
       fetchTasks();
-      setTasks((prevTasks) => [...prevTasks, taskObj]);
+      //setTasks((prevTasks) => [...prevTasks, taskObj]);
     } catch (err) {
       console.log(err.message);
     }
@@ -70,9 +115,10 @@ function App() {
       const res = await req.json();
       console.log(res);
       fetchTasks();
+      /*
       setTasks((prevTasks) =>
         prevTasks.filter((task) => task.id !== taskObj.id)
-      );
+      );*/
     } catch (err) {
       console.log(err.message);
     }
@@ -183,31 +229,56 @@ function App() {
       console.log(err.message);
     }
   }
+
+  function handleChangePage(page) {
+    setCurrentPage(page);
+  }
+
   //Carrega tasks do banco de dados na primeira render
   useEffect(() => {
     fetchTasks();
   }, []);
 
+  useEffect(() => {
+    setPaginationControl(Math.ceil(tasks.length / 5) || 1);
+  }, [tasks]);
+
   return (
     <>
-      {/*<SignUp />*/}
-
       <Navbar />
       <Container>
         <ControleTarefa onOpen={handleOpen} />
         <ContainerTarefa>
-          {tasks.map((task) => (
-            <Tarefa
-              taskObj={task}
-              key={task.id}
-              onDelete={handleDelete}
-              onConclude={handleChangeTaskStatus}
-              onUnconclude={handleUnconclude}
-              onEdit={handleEdit}
-            />
-          ))}
+          {tasks.map((task, i) => {
+            //1 - 1 = 0 * 5 = 0 - começa do zero
+            //1 * 5 = 5, termina no 5
+            if (i >= (currentPage - 1) * 5 && i < currentPage * 5) {
+              return (
+                <Tarefa
+                  taskObj={task}
+                  key={task.id}
+                  onDelete={handleDelete}
+                  onConclude={handleChangeTaskStatus}
+                  onEdit={handleEdit}
+                />
+              );
+            }
+          })}
         </ContainerTarefa>
       </Container>
+      <nav>
+        <ul className="pagination pagination-sm justify-content-center">
+          {Array.from({ length: paginationControl }, (_, i) => (
+            <li
+              className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+              key={i + 1}
+              onClick={() => handleChangePage(i + 1)}
+            >
+              <a className="page-link">{i + 1}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
       {/* Controle do modal */}
       {isOpen && (
         <Modal
@@ -221,5 +292,3 @@ function App() {
     </>
   );
 }
-
-export default App;

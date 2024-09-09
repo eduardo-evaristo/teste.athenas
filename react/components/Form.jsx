@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function Form({
   signIn,
   handlePassword,
@@ -51,9 +52,12 @@ export default function Form({
           <div className="form-text">
             {signIn ? "Não possui conta?" : "Já possui conta?"}
             <span>
-              <a href="#" className="link-primary">
+              <Link
+                to={signIn ? "/signup" : "/signin"}
+                className="link-primary"
+              >
                 {signIn ? "Cadastre-se" : "Faça login"}
-              </a>
+              </Link>
             </span>
           </div>
         </div>

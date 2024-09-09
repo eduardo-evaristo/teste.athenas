@@ -7,5 +7,5 @@ export function Container({ children }) {
 }
 
 export function ContainerTarefa({ children }) {
-  return <div className="container my-4">{children}</div>;
+  return <div className="container my-4 d-flex flex-column">{children}</div>;
 }

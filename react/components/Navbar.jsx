@@ -1,11 +1,33 @@
+import { useContext } from "react";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../src/AuthContext";
+
 export default function Navbar() {
+  const user = useContext(AuthContext);
+
+  async function handleSignOut() {
+    try {
+      const req = await fetch("http://127.0.0.1:3200/signout", {
+        method: "POST",
+        credentials: "include",
+      });
+      const res = await req.json();
+      console.log(res);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
   return (
-    <div className="container-fluid">
-      <nav className="navbar navbar-expand-lg bg-body-secondary">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            Navbar
-          </a>
+    <nav className="navbar navbar-expand-lg bg-light p-3">
+      <div className="container-fluid d-flex justify-content-between p-3 bg-primary rounded">
+        <a className="navbar-brand disabled fs-3 text-white">
+          <span>
+            <i className="bi bi-list-task"></i>
+          </span>{" "}
+          To-Do List
+        </a>
+        <div className="">
           <button
             className="navbar-toggler"
             type="button"
@@ -19,46 +41,41 @@ export default function Navbar() {
           </button>
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <a className="nav-link" href="#">
-                  Login
-                </a>
-              </li>
-              <li className="nav-item dropdown">
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Dropdown
-                </a>
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Action
+              {user ? (
+                <>
+                  <li className="nav-item">
+                    <a href="/" className="nav-link text-white">
+                      {user.username}
                     </a>
                   </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Another action
-                    </a>
+                  <li className="nav-item">
+                    <Link
+                      to="/"
+                      className="nav-link text-white"
+                      onClick={handleSignOut}
+                    >
+                      Sair
+                    </Link>
                   </li>
-                  <li>
-                    <hr className="dropdown-divider" />
+                </>
+              ) : (
+                <>
+                  <li className="nav-item">
+                    <Link to="/signin" className="nav-link text-white">
+                      Entrar
+                    </Link>
                   </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Something else here
-                    </a>
+                  <li className="nav-item">
+                    <Link to="/signup" className="nav-link text-white">
+                      Registrar-se
+                    </Link>
                   </li>
-                </ul>
-              </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 }

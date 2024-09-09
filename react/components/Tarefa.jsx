@@ -1,10 +1,4 @@
-export function Tarefa({
-  taskObj,
-  onDelete,
-  onConclude,
-  onUnconclude,
-  onEdit,
-}) {
+export function Tarefa({ taskObj, onDelete, onConclude, onEdit }) {
   return (
     <div className="row p-2 align-items-center bg-light rounded my-2 shadow-sm d-flex flex-column flex-sm-column flex-md-row text-center gap-4 gap-lg-0">
       <div className="col py-2 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Form from "../components/Form";
 
 const caracteresNaoAceitos = [
@@ -27,6 +29,7 @@ export function SignUp() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   function handleUsername(e) {
     setError(null);
@@ -57,7 +60,7 @@ export function SignUp() {
         //Mostra o erro retornado do back
         setError(res.message);
       } else {
-        //Redicrect
+        return navigate("/");
       }
       setIsLoading(false);
     } catch (err) {
@@ -93,6 +96,7 @@ export function SignIn() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   function handleUsername(e) {
     setError(null);
@@ -124,6 +128,7 @@ export function SignIn() {
         setError(res.message);
       } else {
         //Redicrect
+        navigate("/");
       }
       setIsLoading(false);
     } catch (err) {
