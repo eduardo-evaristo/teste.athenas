@@ -15,9 +15,11 @@ async function hashPassword(password, rounds) {
 
 //Handler final da rota "/signup"
 async function signUpUser(req, res) {
+  //Obtem credenciais passadas no payload
   const { username, password } = req.body;
   const query = "INSERT INTO usuarios (username, password) values ($1, $2)";
 
+  //Faz hash da senha antes de salvá-la
   try {
     const hashedPassword = await hashPassword(password, 10);
     await db.query(query, [username, hashedPassword]);
@@ -35,6 +37,7 @@ async function signUpUser(req, res) {
 function checkPayloadAuth(req, res, next) {
   console.log(req.cookies);
   const { username, password } = req.body;
+  //Se payload não estiver correto, não segue aos próximos middleware
   if (!username || !password)
     return res
       .status(400)

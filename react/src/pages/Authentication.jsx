@@ -2,8 +2,10 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 
+//Importando componentes usados
 import Form from "./../components/Form";
 
+//Caracteres não aceitos para evitar problemas no backend
 const caracteresNaoAceitos = [
   "'",
   '"',
@@ -20,6 +22,7 @@ const caracteresNaoAceitos = [
   "!",
 ];
 
+//Função de utilidade que valida o input
 function validaInput(input) {
   return caracteresNaoAceitos.some((caracter) => input.includes(caracter));
 }
@@ -32,6 +35,7 @@ export function SignUp() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  //Controlando os inputs
   function handleUsername(e) {
     setError(null);
     setUsername(e.target.value);
@@ -42,6 +46,7 @@ export function SignUp() {
     setPassword(e.target.value);
   }
 
+  //Enviando ao backend
   async function handleSubmit(e) {
     e.preventDefault();
     if (!username || !password)
@@ -61,13 +66,14 @@ export function SignUp() {
         //Mostra o erro retornado do back
         setError(res.message);
       } else {
+        //Envia o usuário à página de login para entrar em sua conta
         return navigate("/signin");
       }
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
       setError("Algo deu errado.");
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
@@ -100,6 +106,7 @@ export function SignIn() {
   const navigate = useNavigate();
   const { setIsUserLoggedIn } = useContext(AuthContext);
 
+  //Controlando os inputs
   function handleUsername(e) {
     setError(null);
     setUsername(e.target.value);
@@ -126,11 +133,10 @@ export function SignIn() {
       if (!req.ok) {
         //Remove loader
         setIsLoading(false);
-        //Mostra o erro retornado do back
+        //Mostra o erro retornado do backend para dar feedback
         setError(res.message);
       } else {
-        //Redicrect
-        console.log(res);
+        //Seta o usuário atual ao state global de usuário para obter tarefas quando chegar à página principal
         setIsUserLoggedIn(res.data);
         navigate("/");
       }
@@ -138,11 +144,11 @@ export function SignIn() {
     } catch (err) {
       setIsLoading(false);
       setError("Algo deu errado.");
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
-  //Setar erro caso caracter inválido
+  //Mostar erro caso caracter inválido
   useEffect(() => {
     if (validaInput(username) || validaInput(password)) {
       setError(`Caracteres inválidos: ${caracteresNaoAceitos.join(" ")}`);

@@ -4,6 +4,7 @@ const signUpController = require("./../controllers/signUpController");
 
 const router = express.Router();
 
+//Definição de cada rota
 router
   .route("/")
   .post(signUpController.checkPayloadAuth, signInController.logInUser);

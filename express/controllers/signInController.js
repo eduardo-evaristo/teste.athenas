@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const db = require("./../db");
 const { checkAcessToken } = require("./tasksController");
 
+//Faz login do usuário
 async function logInUser(req, res) {
   const { username, password } = req.body;
   const query = "SELECT * FROM usuarios WHERE username = $1";
@@ -13,6 +14,7 @@ async function logInUser(req, res) {
   console.log(userId);
 
   try {
+    //Comparando senha passada com senha hasheada do banco de dados
     const result = await bcrypt.compare(password, hashedPassword1);
     if (result) {
       //Enviando accessToken
@@ -21,7 +23,6 @@ async function logInUser(req, res) {
         process.env.JWT_PRIVATE_KEY
       );
       console.log(accessToken);
-      //
 
       //maxAge está p 1 mês
       res
@@ -30,7 +31,7 @@ async function logInUser(req, res) {
           maxAge: 2592000000,
           httpOnly: false,
           secure: true,
-          sameSite: "none", //
+          sameSite: "none",
         })
         .json({ status: "success", data: username });
     } else {
@@ -44,6 +45,7 @@ async function logInUser(req, res) {
   }
 }
 
+//Checa se usuário já está logado no navegador, usando o cookie com o token JWT, se ele existir, o usuário está logado
 async function isUserLoggedIn(req, res) {
   const accessToken = req?.cookies?.accessToken;
   if (!accessToken)
@@ -52,12 +54,12 @@ async function isUserLoggedIn(req, res) {
       .json({ status: "fail", message: "Usuário não autenticado" });
 
   const userId = checkAcessToken(accessToken);
-  console.log("entrou aqqq");
 
   const query = "SELECT username FROM usuarios WHERE id = $1";
   try {
     const queryResult = await db.query(query, [userId]);
     const data = queryResult.rows[0].username;
+    //Envia o username do usuário para identificação no frontend
     res.status(200).json({ status: "success", data });
   } catch (err) {
     res.status(500).json({ status: "error", message: "Algo deu errado." });

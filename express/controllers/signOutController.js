@@ -1,7 +1,7 @@
 async function signUserOut(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
-  //Se access token n existir
+  //Se access token n existir, limpamos o cookie relativo a ele
   if (!accessToken)
     return res
       .status(401)

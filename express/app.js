@@ -8,7 +8,7 @@ const dotenv = require("dotenv");
 const app = express();
 dotenv.config({ path: "./config.env" });
 
-//Routers
+//Importando routers
 const signUpRouter = require("./routes/signUpRouter");
 const signInRouter = require("./routes/signInRouter");
 const tasksRouter = require("./routes/tasksRouter");
@@ -39,6 +39,7 @@ app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
 
+//Estabelecendo conexão com o banco de dados
 db.connect((err) => {
   if (err) return console.log(err.message);
   console.log("Conectado");

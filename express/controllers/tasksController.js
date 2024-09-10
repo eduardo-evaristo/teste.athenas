@@ -1,11 +1,22 @@
 const jsonwebtoken = require("jsonwebtoken");
 const db = require("./../db");
 
+//Função de utilidade para checar o token de acesso passado na request
+function checkAcessToken(accessToken) {
+  //Extrai o id do usuário
+  const userId = jsonwebtoken.verify(
+    accessToken,
+    process.env.JWT_PRIVATE_KEY
+  ).userId;
+  //Retorna userId
+  return userId;
+}
+
+//Handlers/Middleware
+
 //Handler final ppostar uma tarefa
 async function postTask(req, res) {
-  console.log("entrou");
   const accessToken = req?.cookies?.accessToken;
-  //Pegando payload que foi passado p o método sign do token e acessando userId nele
 
   //Se access token n existir
   if (!accessToken)
@@ -17,9 +28,15 @@ async function postTask(req, res) {
   const userId = checkAcessToken(accessToken);
 
   let { titulo, descricao, dtVencimento, situacao } = req.body;
+  //Se não houver descrição, pois é opcional, ela será null no banco de dadoa
   if (!descricao) descricao = null;
 
-  if (!titulo || !dtVencimento || !situacao) return;
+  //Se informações necessárias não existirem
+  if (!titulo || !dtVencimento || !situacao)
+    return res.status(500).json({
+      status: "fail",
+      message: "Informações necessárias não foram passadas.",
+    });
 
   const query =
     "INSERT INTO tarefas (titulo, descricao, dt_vencimento, situacao, id_usuario) values ($1, $2, $3, $4, $5)";
@@ -36,6 +53,7 @@ async function postTask(req, res) {
   res.status(201).json({ status: "success", message: "Tarefa criada!" });
 }
 
+//Obtém todas as tarefas do usuário
 async function getAllTasks(req, res) {
   const accessToken = req.cookies.accessToken;
 
@@ -80,7 +98,11 @@ async function deleteTask(req, res) {
   //Possivelmente fazer isso numa função separada
   let { idTask } = req.body;
 
-  if (!idTask) return;
+  if (!idTask)
+    return res.status(500).json({
+      status: "fail",
+      message: "Informações necessárias não foram passadas.",
+    });
 
   const query = "DELETE FROM tarefas WHERE id = $1 AND id_usuario = $2";
 
@@ -93,6 +115,7 @@ async function deleteTask(req, res) {
       message: "Algo deu errado! Por favor tente novamente.",
     });
   }
+  //Status code 204 causa um bug no front end
   res.status(201).json({ status: "success", message: "Tarefa deletada!" });
 }
 
@@ -137,6 +160,7 @@ async function editTask(req, res) {
   }
 }
 
+//Troca status (concluído/pendente) da tarefa
 async function changeTaskStatus(req, res) {
   const accessToken = req?.cookies?.accessToken;
 
@@ -168,16 +192,6 @@ async function changeTaskStatus(req, res) {
       message: "Algo deu errado! Por favor tente novamente.",
     });
   }
-}
-
-function checkAcessToken(accessToken) {
-  //Extrai o id do usuário
-  const userId = jsonwebtoken.verify(
-    accessToken,
-    process.env.JWT_PRIVATE_KEY
-  ).userId;
-  //Retorna userId
-  return userId;
 }
 
 exports.getAllTasks = getAllTasks;

@@ -1,21 +1,32 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../App";
 
-//Importando componentes
+//Importando componentes usados na página
 import { Container, ContainerTarefa } from "./../components/Container";
 import { ControleTarefa, Tarefa } from "./../components/Tarefa";
 import Modal from "./../components/Modal";
 import Navbar from "./../components/Navbar";
+import Pagination from "../components/Pagination";
 
 export default function TasksPage() {
+  //Controla se modal está aberto ou não
   const [isOpen, setIsOpen] = useState(false);
+  //Controlq se modal deve estar em modo de edição ou criação
   const [isEditing, setIsEditing] = useState(null);
+  //Recebe tasks vindas do banco de dados
   const [tasks, setTasks] = useState([]);
+  //Controla quantidade de páginas que devem existir na paginação
   const [paginationControl, setPaginationControl] = useState(
     Math.ceil(tasks.length / 5) || 1
   );
+  //Controla em qual página da paginação estamos
   const [currentPage, setCurrentPage] = useState(1);
-  const { isUserLoggedIn, setIsUserLoggedIn } = useContext(AuthContext);
+  //State global para controlar se há um usuário logado ou não
+  const { isUserLoggedIn } = useContext(AuthContext);
+  //Controle de como estão filtradas as tarefas
+  const [sort, setSort] = useState("Todas");
+  //Tarefas filtradas (essas que são exibidas)
+  const [sortedTasks, setSortedTasks] = useState([]);
 
   //Abre modal (criar tarefa)
   function handleOpen() {
@@ -34,7 +45,7 @@ export default function TasksPage() {
     handleOpen();
   }
 
-  //Adiciona tarefa A` lista
+  //Adiciona tarefa à lista
   async function handleAdd(taskObj) {
     try {
       const req = await fetch("http://127.0.0.1:3200/tasks", {
@@ -53,13 +64,12 @@ export default function TasksPage() {
       const res = await req.json();
       console.log(res);
       fetchTasks();
-      //setTasks((prevTasks) => [...prevTasks, taskObj]);
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
-  //When tasks come from db, handle this using ID instead - Feito
+  //Deleta uma tarefa
   async function handleDelete(taskObj) {
     try {
       const req = await fetch("http://127.0.0.1:3200/tasks", {
@@ -75,19 +85,15 @@ export default function TasksPage() {
       const res = await req.json();
       console.log(res);
       fetchTasks();
-      /*
-        setTasks((prevTasks) =>
-          prevTasks.filter((task) => task.id !== taskObj.id)
-        );*/
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
-  //Esperar dados virem do db pra usar id nisso
+  //Envia tarefa atualizada para substituir a prévia no banco de dados
   async function handleUpdate(taskObj) {
     try {
-      const req = await fetch("http://127.0.0.1:3200/tasks", {
+      await fetch("http://127.0.0.1:3200/tasks", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -101,28 +107,13 @@ export default function TasksPage() {
           situacao: taskObj.situacao,
         }),
       });
-      //const res = await req.json();
       fetchTasks();
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
-  //Conclui tarefa - Mudar para id depois
-  //TODO: Checar se data do objeto não ultrapassou a data atual - Feito
-  //Refatorado pra handleChangeTaskStatus
-  /*
-    async function handleConclude(taskObj) {
-      const dataJaPassou = validaData(taskObj.dt_vencimento);
-      if (!dataJaPassou) return;
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskObj.id ? { ...task, situacao: "concluído" } : task
-        )
-      );
-    }
-      */
-
+  //Muda o estado de uma tarefa de 'Pendente' para 'Concluído'
   async function handleChangeTaskStatus(taskObj) {
     const dataJaPassou = validaData(taskObj.dt_vencimento);
     if (!dataJaPassou) return;
@@ -144,39 +135,24 @@ export default function TasksPage() {
     } catch (err) {
       console.log(err.message);
     }
-    /*
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskObj.id ? { ...task, situacao: "concluído" } : task
-        )
-      );
-      */
   }
 
-  //'Desconclui' tarefa - Mudar para id depois
-  //Refatorado pra handleChangeTaskStatus
-  /*
-    function handleUnconclude(taskObj) {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskObj.id ? { ...task, situacao: "pendente" } : task
-        )
-      );
-    }
-    */
-
+  //Função de utilidade para validar se data da tarefa pendente passou ou não
   function validaData(data) {
+    //Obtendo data e definindo um ponto 0
     const dataInput = new Date(data).setHours(0, 0, 0, 0) || 0;
     const now = new Date(Date.now()).setHours(0, 0, 0, 0);
-    console.log(now, dataInput);
-    console.log(dataInput === now);
+
+    //Validando se data dada é menor do que a data atual
     if (dataInput < now) {
       return false;
     }
     return true;
   }
 
+  //Busca todas tarefas relacionadas ao usuário (se houver)
   async function fetchTasks() {
+    if (!isUserLoggedIn) return;
     try {
       const req = await fetch("http://127.0.0.1:3200/tasks", {
         credentials: "include",
@@ -190,15 +166,37 @@ export default function TasksPage() {
     }
   }
 
+  //Muda paginação
   function handleChangePage(page) {
     setCurrentPage(page);
   }
 
-  //Carrega tasks do banco de dados na primeira render
+  //Muda tipo de filtragem
+  function handleSort(e) {
+    setSort(e.target.value);
+  }
+
+  //Reage a mudanças em tasks e sort para refletir as últimas mudanças em ambas as variáveis
+  useEffect(() => {
+    console.log(sortedTasks);
+    switch (sort) {
+      case "Todas":
+        setSortedTasks([...tasks]);
+        break;
+      case "Concluídas":
+        setSortedTasks(tasks.filter((task) => task.situacao === "concluído"));
+        break;
+      case "Pendentes":
+        setSortedTasks(tasks.filter((task) => task.situacao === "pendente"));
+    }
+  }, [tasks, sort]);
+
+  //Carrega tasks do banco de dados na primeira render, reage à mudanças do state global isUserLoggedIn, que no início pode estar undefined
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [isUserLoggedIn]);
 
+  //Reage à variável tasks para definir a quantidade de páginas disponíveis
   useEffect(() => {
     setPaginationControl(Math.ceil(tasks.length / 5) || 1);
   }, [tasks]);
@@ -207,10 +205,10 @@ export default function TasksPage() {
     <>
       <Navbar />
       <Container>
-        <ControleTarefa onOpen={handleOpen} />
+        <ControleTarefa onOpen={handleOpen} onSort={handleSort} />
         <ContainerTarefa>
           {isUserLoggedIn
-            ? tasks.map((task, i) => {
+            ? sortedTasks.map((task, i) => {
                 //1 - 1 = 0 * 5 = 0 - começa do zero
                 //1 * 5 = 5, termina no 5
                 if (i >= (currentPage - 1) * 5 && i < currentPage * 5) {
@@ -228,19 +226,11 @@ export default function TasksPage() {
             : null}
         </ContainerTarefa>
       </Container>
-      <nav>
-        <ul className="pagination pagination-sm justify-content-center">
-          {Array.from({ length: paginationControl }, (_, i) => (
-            <li
-              className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
-              key={i + 1}
-              onClick={() => handleChangePage(i + 1)}
-            >
-              <a className="page-link">{i + 1}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <Pagination
+        paginationControl={paginationControl}
+        currentPage={currentPage}
+        onChangePage={handleChangePage}
+      />
       {/* Controle do modal */}
       {isOpen && (
         <Modal

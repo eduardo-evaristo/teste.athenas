@@ -1,10 +1,11 @@
+//Componente da tarefa
 export function Tarefa({ taskObj, onDelete, onConclude, onEdit }) {
   return (
     <div className="row p-2 align-items-center bg-light rounded my-2 shadow-sm d-flex flex-column flex-sm-column flex-md-row text-center gap-4 gap-lg-0">
       <div className="col py-2 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">
         <div className="text-secondary">{taskObj.titulo}</div>
       </div>
-      <div className="col-md-3s col-lg py-2 py-sm-0 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">
+      <div className="col-md-3s col-lg py-0 py-sm-0 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">
         <div className="text-secondary">{taskObj.descricao}</div>
       </div>
       <div className="col py-2 py-sm-0 border rounded border-sm-0 text-wrap text-break shadow-sm shadow-lg-none">
@@ -45,19 +46,26 @@ export function Tarefa({ taskObj, onDelete, onConclude, onEdit }) {
   );
 }
 
-export function ControleTarefa({ onOpen }) {
+//Opções da filtragem
+const optionsSort = ["Todas", "Concluídas", "Pendentes"];
+
+export function ControleTarefa({ onOpen, onSort }) {
   return (
     <div className="row bg-light justify-content-around align-items-center rounded p-4 fw-bold fs-5 d-flex flex-column flex-sm-row">
       <div className="col text-center mb-3 mb-sm-0">
         <div className="text-body">Tarefas</div>
       </div>
-      <div className="col d-flex gap-2 justify-content-center justify-content-sm-end">
-        <button className="btn btn-success btn" onClick={onOpen}>
+      <div className="col d-flex gap-2 justify-content-center align-items-center justify-content-sm-end">
+        <button className="btn btn-success btn-sm" onClick={onOpen}>
           <i className="bi bi-plus-lg"></i> Adicionar
         </button>
-        <button className="btn btn-warning btn">
-          <i className="bi bi-funnel-fill"></i> Filtrar
-        </button>
+        <select className="form-select">
+          {optionsSort.map((option, i) => (
+            <option value={option} key={i} onClick={onSort}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

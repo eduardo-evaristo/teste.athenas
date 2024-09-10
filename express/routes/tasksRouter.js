@@ -3,6 +3,7 @@ const tasksController = require("./../controllers/tasksController");
 
 const router = express.Router();
 
+//Definição de cada rota
 router
   .route("/")
   .get(tasksController.getAllTasks)

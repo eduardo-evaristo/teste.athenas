@@ -4,8 +4,8 @@ import { AuthContext } from "./../App";
 
 export default function Navbar() {
   const { isUserLoggedIn, setIsUserLoggedIn } = useContext(AuthContext);
-  console.log(isUserLoggedIn);
 
+  //Desloga o usuário
   async function handleSignOut() {
     try {
       const req = await fetch("http://127.0.0.1:3200/signout", {
@@ -14,9 +14,10 @@ export default function Navbar() {
       });
       const res = await req.json();
       console.log(res);
+      //Remove o valor do state global de usuário para refletir mudanças visuais ao deslogar
       setIsUserLoggedIn(false);
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
     }
   }
 
@@ -37,11 +38,10 @@ export default function Navbar() {
             data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent"
             aria-expanded="false"
-            aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+          <div className="collapse navbar-collapse" id="navbar">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {isUserLoggedIn ? (
                 <>

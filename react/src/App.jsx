@@ -8,7 +8,7 @@ export const AuthContext = createContext();
 import TasksPage from "./pages/TasksPage";
 import { SignUp, SignIn } from "./pages/Authentication";
 
-//Rotas do app React
+//Rotas possíveis do app React
 const router = createBrowserRouter([
   { path: "/", element: <TasksPage /> },
   { path: "/signin", element: <SignIn /> },
@@ -18,6 +18,7 @@ const router = createBrowserRouter([
 function App() {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
+  //Checa se usuário já está logado na primeira render do app
   useEffect(() => {
     async function isUserLogged() {
       try {
@@ -27,7 +28,6 @@ function App() {
         });
         const res = await req.json();
         const username = res.data;
-        console.log(username);
         setIsUserLoggedIn(username);
       } catch (err) {
         console.log(err.message);

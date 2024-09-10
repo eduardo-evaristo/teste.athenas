@@ -20,6 +20,7 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
   const [situacao, setSituacao] = useState(
     isEditing ? isEditing.situacao : "pendente"
   );
+  //Resposta visual à erros
   const [error, setError] = useState(null);
 
   //Controles dos states de cada input
@@ -39,15 +40,18 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
     setDataVencimento(e.target.value);
   }
 
-  //TODO: Revisar essa funcionalidade - Feito
+  //Valida a data baseado no formato mm/dd/YYYY, que chegam inicialmente em formato YYYY DD MM
   function validaData(data) {
     const dataStep1 = data.split("-");
     const dataStep2 = [dataStep1[1], dataStep1[2], dataStep1[0]].join("/");
 
+    //Reinicia as datas para um ponto inicial 0
     const dataInput = new Date(dataStep2).setHours(0, 0, 0, 0) || 0;
     const now = new Date(Date.now()).setHours(0, 0, 0, 0);
 
+    //Se data escolhida pelo usuário for menor do que hoje
     if (dataInput < now) {
+      //Feedback visual
       setError(errors.get(3));
       return false;
     }
@@ -76,7 +80,7 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
     const newTask = { titulo, descricao, data, situacao };
     //Limpa campos
     clearFields();
-    //Adiciona objeto à variável de state
+    //Decide a função responsável para lidar com o objeto de tarefa, update para edições e add para adições
     isEditing ? onUpdate({ ...newTask, id: isEditing.id }) : onAdd(newTask);
     //Fecha modal e seta isEditing para falso
     onClose();
@@ -89,6 +93,7 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
     };
     document.addEventListener("keydown", closeOutOfModal);
 
+    //Função de clean up pra remover o evento quando o modal não estiver montado
     return () => {
       document.removeEventListener("keydown", closeOutOfModal);
     };
@@ -97,9 +102,8 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
   return (
     <div
       className={`modal fade ${show ? "show" : ""}`}
-      id="exampleModalCenter"
+      id="modal"
       tabIndex="-1"
-      aria-labelledby="exampleModalCenterTitle"
       style={{ display: show ? "block" : "none" }}
       aria-modal="true"
       role="dialog"
@@ -128,26 +132,23 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
                       type="text"
                       className="form-control"
                       id="titulo"
-                      aria-describedby="emailHelp"
                       value={titulo}
                       required
                       maxLength={100}
+                      minLength={3}
                       onChange={handleTitulo}
                     />
                   </div>
                 </div>
                 <div className="col">
                   <div className="mb-3">
-                    <label
-                      htmlFor="exampleInputPassword1"
-                      className="form-label"
-                    >
+                    <label htmlFor="descricao" className="form-label">
                       Descrição
                     </label>
                     <input
                       type="text"
                       className="form-control"
-                      id="exampleInputPassword1"
+                      id="descricao"
                       value={descricao}
                       onChange={handleDescricao}
                     />
@@ -157,14 +158,13 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
               <div className="row">
                 <div className="col">
                   <div className="mb-3">
-                    <label htmlFor="exampleInputEmail1" className="form-label">
+                    <label htmlFor="data" className="form-label">
                       Data
                     </label>
                     <input
                       type="date"
                       className="form-control"
-                      id="exampleInputEmail1"
-                      aria-describedby="emailHelp"
+                      id="data"
                       value={dataVencimento}
                       onChange={handleData}
                     />
@@ -173,14 +173,11 @@ export default function Modal({ show, isEditing, onClose, onAdd, onUpdate }) {
                 {!isEditing ? (
                   <div className="col">
                     <div className="mb-3">
-                      <label
-                        htmlFor="exampleInputPassword1"
-                        className="form-label"
-                      >
+                      <label htmlFor="situacao" className="form-label">
                         Situação
                       </label>
                       <select
-                        id="disabledSelect"
+                        id="situacao"
                         className="form-select"
                         value={situacao}
                         onChange={handleSituacao}
